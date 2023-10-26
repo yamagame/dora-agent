@@ -24,9 +24,11 @@
   },
   "scripts": {
     "start": "ts-node src/servo-head.ts",
-    "build": "rm -rf ./build && tsc --project tsconfig.build.json",
+    "build": "tsc --project tsconfig.build.json && tsc-alias --verbose -p tsconfig.build.json",
+    "build:all": "rm -rf ./build && tsc --project tsconfig.build.json && tsc-alias --verbose -p tsconfig.build.json",
     "servo": "node build/src/servo-head.js",
     "servo:sudo": "sudo node build/src/servo-head.js",
+    "clean": "rm -rf ./build",
     "ts-node": "ts-node -r tsconfig-paths/register $1",
     "test": "jest"
   },

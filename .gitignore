@@ -30,3 +30,4 @@ robot-defaults.json
 /work/*
 !/work/.gitkeep
 .env
+*.tsbuildinfo

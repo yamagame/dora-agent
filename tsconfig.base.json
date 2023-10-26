@@ -2,9 +2,11 @@
   "compilerOptions": {
     "downlevelIteration": true,
     "composite": true,
+    "target": "ES2015",
     "module": "CommonJS",
     "outDir": "./build/",
-    "baseUrl": "./src/",
+    "rootDir": "./src",
+    "baseUrl": "./src",
     "paths": {
       "~/*": ["*"]
     }
