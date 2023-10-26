@@ -54,7 +54,7 @@ function abs(a) {
 }
 
 function startServo() {
-  const { Servo } = require("./servo")
+  const Servo = require("./servo")
   const servo = Servo()
   const led = require("./led-controller")()
   servo.pwm0.write(servo0.now) //UP DOWN
