@@ -10,22 +10,25 @@ export function Start(confpath, config, callback) {
   if (config.voiceHat) {
     pigpio.configureClock(5, 0)
   }
-  raspi.init(callback(this))
+  raspi.init(() => {
+    servoHead.startServo(config)
+    servoHead.startButton(config)
+    callback(servoHead)
+  })
 }
 
 class ServoHead extends ServoHeadBase {
   buttonLevel = null
   button = null
+  servo = null
 
   constructor(confpath, config) {
     super(confpath, config)
-    this.startServo(this.setting, config)
-    this.button = this.startButton(config)
   }
 
-  startServo(setting, config) {
-    const servo0 = CreateServo(setting.servo0) //UP DOWN
-    const servo1 = CreateServo(setting.servo1) //LEFT RIGHT
+  startServo(config) {
+    const servo0 = CreateServo(this.setting.servo0) //UP DOWN
+    const servo1 = CreateServo(this.setting.servo1) //LEFT RIGHT
     const servoAction = CreateServoAction(servo0, servo1)
     const led = require("./led-controller")()
 
@@ -65,6 +68,7 @@ class ServoHead extends ServoHeadBase {
     this.servo0 = servo0
     this.servo1 = servo1
     this.servoAction = servoAction
+    this.servo = servo
   }
 
   startButton(config) {
@@ -80,6 +84,7 @@ class ServoHead extends ServoHeadBase {
     //     this.buttonLevel = level
     //   }
     // })
+    this.button = button
     return button
   }
 

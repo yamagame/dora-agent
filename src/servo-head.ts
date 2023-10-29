@@ -14,6 +14,7 @@ function loadSetting(confpath) {
 
 export function Start(confpath, config, callback) {
   const servoHead = new MockServoHead(confpath, config)
+  servoHead.startServo(config)
   callback(servoHead)
 }
 
@@ -23,17 +24,19 @@ export class ServoHeadBase {
   led_bright = 1
   servo0 = null
   servo1 = null
-  setting = {}
+  setting = {
+    servo0: 0.073,
+    servo1: 0.073,
+  }
   servoAction = null
 
   constructor(confpath, config) {
     this.setting = loadSetting(confpath)
-    this.startServo(this.setting, config)
   }
 
-  startServo(setting, config) {
-    const servo0 = CreateServo(setting.servo0) //UP DOWN
-    const servo1 = CreateServo(setting.servo1) //LEFT RIGHT
+  startServo(config) {
+    const servo0 = CreateServo(this.setting.servo0) //UP DOWN
+    const servo1 = CreateServo(this.setting.servo1) //LEFT RIGHT
     const servoAction = CreateServoAction(servo0, servo1)
     const led = require("./led-controller")()
     setInterval(() => {
