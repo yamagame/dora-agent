@@ -1,5 +1,7 @@
 # dora-engine / GPIO プロセス
 
+pigpio は nodejs 14.X.X でビルドする必要がある。yarn install は nodejs 14.X.X で行うこと。
+
 ## socket.io イベント
 
 - led-command LED点灯モード変更イベント
