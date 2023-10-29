@@ -56,10 +56,6 @@ class ServoEmitter extends EventEmitter {
   }
 }
 
-function Servo(center: number) {
-  return new ServoEmitter(center)
-}
-
 class ActionEmitter extends EventEmitter {
   servo0?: ServoEmitter
   servo1?: ServoEmitter
@@ -181,7 +177,11 @@ class ActionEmitter extends EventEmitter {
   }
 }
 
-function Action(servo0, servo1) {
+function CreateServo(center: number) {
+  return new ServoEmitter(center)
+}
+
+function CreateServoAction(servo0, servo1) {
   let t = new ActionEmitter()
   t.servo0 = servo0
   t.servo1 = servo1
@@ -192,4 +192,4 @@ function Action(servo0, servo1) {
   return t
 }
 
-export { Action, Servo }
+export { CreateServoAction, CreateServo }

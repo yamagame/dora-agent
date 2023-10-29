@@ -23,11 +23,11 @@
     "typescript": "^5.1.6"
   },
   "scripts": {
-    "start": "ts-node src/servo-head.ts",
+    "start": "ts-node src/index.ts",
     "build": "tsc --project tsconfig.build.json && tsc-alias --verbose -p tsconfig.build.json",
     "build:all": "rm -rf ./build && tsc --project tsconfig.build.json && tsc-alias --verbose -p tsconfig.build.json",
-    "servo": "node build/src/servo-head.js",
-    "servo:sudo": "sudo node build/src/servo-head.js",
+    "servo": "node build/src/index.js",
+    "servo:sudo": "sudo node build/src/index.js",
     "clean": "rm -rf ./build",
     "ts-node": "ts-node -r tsconfig-paths/register $1",
     "test": "jest"

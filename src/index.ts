@@ -1,12 +1,13 @@
 import * as path from "path"
-const { StartServoHead } = require("servo-head")
-const { config } = require("~/config")
+import * as ServoHead from "./servo-head"
+// import * as ServoHead from "./servo-head-rpi"
+const { config } = require("./config")
 
 function main() {
   const { basedir } = config
   const confpath = path.join(basedir, "servo-head.json")
 
-  StartServoHead(confpath, config, (servoHead) => {
+  ServoHead.Start(confpath, config, (servoHead) => {
     servoHead.mode = process.env.MODE || "idle"
     servoHead.led_mode = process.env.LED_MODE || "off"
     servoHead.led_bright = process.env.LED_VALUE || 1
@@ -154,10 +155,10 @@ function main() {
         if (config.useGamePad) {
           const { action, vendorId, productId } = payload
           if (action === "add") {
-            gamepad.add(vendorId, productId)
+            servoHead.gamepad.add(vendorId, productId)
           }
           if (action === "remove") {
-            gamepad.remove(vendorId, productId)
+            servoHead.gamepad.remove(vendorId, productId)
           }
         }
         if (callback) callback()
@@ -174,7 +175,7 @@ function main() {
     }, 100)
 
     if (config.useGamePad) {
-      gamepad.on("event", (event) => {
+      servoHead.gamepad.on("event", (event) => {
         io.emit("gamepad", event)
       })
     }

@@ -1,8 +1,6 @@
 import * as fs from "fs"
-import { Servo, Action } from "./action"
-const raspi = require("raspi")
-const math = require("math")
-const pigpio = require("pigpio")
+import { CreateServo, CreateServoAction } from "./action"
+const math = require("./math")
 
 function loadSetting(confpath) {
   try {
@@ -14,26 +12,42 @@ function loadSetting(confpath) {
   }
 }
 
-export function StartMockServoHead(confpath, config, callback) {
+export function Start(confpath, config, callback) {
   const servoHead = new MockServoHead(confpath, config)
   callback(servoHead)
 }
 
-export function StartServoHead(confpath, config, callback) {
-  const servoHead = new ServoHead(confpath, config)
-  if (config.voiceHat) {
-    pigpio.configureClock(5, 0)
-  }
-  raspi.init(callback(this))
-}
-
-class ServoHeadBase {
+export class ServoHeadBase {
+  mode = "idle"
   led_mode = "off"
   led_bright = 1
+  servo0 = null
+  servo1 = null
   setting = {}
+  servoAction = null
 
   constructor(confpath, config) {
     this.setting = loadSetting(confpath)
+    this.startServo(this.setting, config)
+  }
+
+  startServo(setting, config) {
+    const servo0 = CreateServo(setting.servo0) //UP DOWN
+    const servo1 = CreateServo(setting.servo1) //LEFT RIGHT
+    const servoAction = CreateServoAction(servo0, servo1)
+    const led = require("./led-controller")()
+    setInterval(() => {
+      servoAction.idle(this.mode)
+      if (this.mode !== "talk") {
+        led.resetTalk()
+      }
+      led.talk = math.abs(servo0.target - servo0.center)
+      led.idle(this.led_mode, this.led_bright)
+    }, 20)
+
+    this.servo0 = servo0
+    this.servo1 = servo1
+    this.servoAction = servoAction
   }
 
   changeLed(payload) {
@@ -60,105 +74,6 @@ class ServoHeadBase {
     }
     this.led_bright = typeof payload.value !== "undefined" ? payload.value : this.led_bright
     //console.log(`led_mode ${led_mode} led_bright ${led_bright} `);
-  }
-  saveSetting(confpath) {
-    const data = {
-      ...this.setting,
-    }
-    try {
-      fs.writeFileSync(confpath, JSON.stringify(data))
-    } catch (err) {}
-  }
-}
-
-class MockServoHead extends ServoHeadBase {
-  constructor(confpath, config) {
-    super(confpath, config)
-  }
-  buttonRead() {
-    return 0
-  }
-  idle(direction) {}
-  control(data, reset = false) {}
-  centering(callback) {
-    callback()
-  }
-}
-
-class ServoHead extends ServoHeadBase {
-  mode = "idle"
-  buttonLevel = null
-  servo0 = null
-  servo1 = null
-  servoAction = null
-  button = null
-
-  constructor(confpath, config) {
-    super(confpath, config)
-    this.startServo(this.setting, config)
-    this.button = this.startButton(config)
-  }
-
-  startServo(setting, config) {
-    const servo0 = Servo(setting.servo0) //UP DOWN
-    const servo1 = Servo(setting.servo1) //LEFT RIGHT
-    const servoAction = Action(servo0, servo1)
-
-    const { ServoPWM } = require("./servo-pwm")
-    const servo = ServoPWM()
-    const led = require("./led-controller")()
-    servo.pwm0.write(servo0.now) //UP DOWN
-    servo.pwm1.write(servo1.now) //LEFT RIGHT
-    if (config.voiceHat) {
-      servo.pwm2.write(led.now)
-    } else {
-      servo.pwm2.write(led.max - led.now)
-    }
-    servo0.on("updated", () => {
-      servo.pwm0.write(math.roundParam(servo0.now))
-    })
-    servo1.on("updated", () => {
-      servo.pwm1.write(math.roundParam(servo1.now))
-    })
-    led.on("updated", () => {
-      if (config.voiceHat) {
-        servo.pwm2.write(led.now)
-      } else {
-        servo.pwm2.write(led.max - led.now)
-      }
-    })
-    setInterval(() => {
-      servoAction.idle(this.mode)
-      if (this.mode !== "talk") {
-        led.resetTalk()
-      }
-      led.talk = math.abs(servo0.target - servo0.center)
-      led.idle(this.led_mode, this.led_bright)
-    }, 20)
-
-    this.servo0 = servo0
-    this.servo1 = servo1
-    this.servoAction = servoAction
-  }
-
-  startButton(config) {
-    const Gpio = require("pigpio").Gpio
-    const button = new Gpio(23, {
-      mode: Gpio.INPUT,
-      pullUpDown: Gpio.PUD_DOWN,
-      edge: Gpio.EITHER_EDGE,
-    })
-    // button.on("interrupt", function (level) {
-    //   if (!config.voiceHat) level = 1 - level
-    //   if (this.buttonLevel != level) {
-    //     this.buttonLevel = level
-    //   }
-    // })
-    return button
-  }
-
-  buttonRead() {
-    return this.button.digitalRead()
   }
 
   idle(direction) {
@@ -208,5 +123,14 @@ class ServoHead extends ServoHeadBase {
     try {
       fs.writeFileSync(confpath, JSON.stringify(data))
     } catch (err) {}
+  }
+}
+
+class MockServoHead extends ServoHeadBase {
+  constructor(confpath, config) {
+    super(confpath, config)
+  }
+  buttonRead() {
+    return 0
   }
 }
