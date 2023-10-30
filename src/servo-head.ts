@@ -1,6 +1,18 @@
 import * as fs from "fs"
 import { CreateServo, CreateServoAction } from "./action"
 const math = require("./math")
+const { execSync } = require("child_process")
+
+export const Start = function (...params) {
+  const arch = execSync("uname")
+  let ServoHead = null
+  if (arch.toString().startsWith("Darwin")) {
+    ServoHead = require("./servo-head-mac")
+  } else {
+    ServoHead = require("./servo-head-rpi")
+  }
+  return ServoHead.Start(params[0], params[1], params[2])
+}
 
 function loadSetting(confpath) {
   try {
@@ -10,12 +22,6 @@ function loadSetting(confpath) {
     servo0: 0.073,
     servo1: 0.073,
   }
-}
-
-export function Start(confpath, config, callback) {
-  const servoHead = new MockServoHead(confpath, config)
-  servoHead.startServo(config)
-  callback(servoHead)
 }
 
 export class ServoHeadBase {
@@ -126,14 +132,5 @@ export class ServoHeadBase {
     try {
       fs.writeFileSync(confpath, JSON.stringify(data))
     } catch (err) {}
-  }
-}
-
-class MockServoHead extends ServoHeadBase {
-  constructor(confpath, config) {
-    super(confpath, config)
-  }
-  buttonRead() {
-    return 0
   }
 }

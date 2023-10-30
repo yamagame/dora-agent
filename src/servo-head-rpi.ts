@@ -1,4 +1,3 @@
-import * as fs from "fs"
 import { CreateServo, CreateServoAction } from "./action"
 import { ServoHeadBase } from "./servo-head"
 const math = require("./math")

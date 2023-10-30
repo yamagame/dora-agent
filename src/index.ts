@@ -1,6 +1,5 @@
 import * as path from "path"
 import * as ServoHead from "./servo-head"
-// import * as ServoHead from "./servo-head-rpi"
 const { config } = require("./config")
 
 function main() {
