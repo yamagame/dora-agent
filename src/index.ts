@@ -85,6 +85,22 @@ function main() {
             }, 3000)
           })
         }
+
+        // curl -X POST http://localhost:3091/button/on
+        if (url.pathname === "/button/on") {
+          return requestHandler(req, (data) => {
+            io.emit("button", { level: 0, state: true })
+            res.end("OK\n")
+          })
+        }
+
+        // curl -X POST http://localhost:3091/button/off
+        if (url.pathname === "/button/off") {
+          return requestHandler(req, (data) => {
+            io.emit("button", { level: 1, state: false })
+            res.end("OK\n")
+          })
+        }
       }
       res.end()
     }
