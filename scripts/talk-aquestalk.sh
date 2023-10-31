@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # AquesTalkPi を使って発話する
+# ./work ディレクトリに　AquesTalkPi を展開しておくこと
 #
 
 SPEECH_TEXT=$1
