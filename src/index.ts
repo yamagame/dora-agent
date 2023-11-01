@@ -1,12 +1,15 @@
 import * as path from "path"
 import * as ServoHead from "./servo-head"
 const { config } = require("./config")
+const { Speech, SpeechMode } = require("./speech")
 
 function main() {
   const { basedir } = config
   const confpath = path.join(basedir, "servo-head.json")
 
   ServoHead.Start(confpath, config, (servoHead) => {
+    const speech = new Speech()
+
     servoHead.mode = process.env.MODE || "idle"
     servoHead.led_mode = process.env.LED_MODE || "off"
     servoHead.led_bright = process.env.LED_VALUE || 1
@@ -43,7 +46,7 @@ function main() {
         // curl -X POST -d '{"h":100,"v":200}' http://localhost:3091/center
         if (url.pathname === "/center") {
           return requestHandler(req, (data) => {
-            servoHead.control(data)
+            servoHead.control(JSON.parse(data))
             res.end("OK\n")
           })
         }
@@ -106,6 +109,24 @@ function main() {
         if (url.pathname === "/button/off") {
           return requestHandler(req, (data) => {
             io.emit("button", { level: 1, state: false })
+            res.end("OK\n")
+          })
+        }
+
+        // curl -X POST -d '{"text":"こんにちは"}' http://localhost:3091/utterance
+        if (url.pathname === "/utterance") {
+          return requestHandler(req, async (data) => {
+            const { text } = JSON.parse(data)
+            speech.params.speechMode = SpeechMode.Aquestalk
+            await speech.play(text)
+            res.end("OK\n")
+          })
+        }
+
+        // curl -X POST http://localhost:3091/utterance/stop
+        if (url.pathname === "/utterance/stop") {
+          return requestHandler(req, async (data) => {
+            speech.stop()
             res.end("OK\n")
           })
         }

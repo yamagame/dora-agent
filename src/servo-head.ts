@@ -4,12 +4,17 @@ const math = require("./math")
 const { execSync } = require("child_process")
 
 export const Start = function (...params) {
-  const arch = execSync("uname")
+  const arch = (() => {
+    try {
+      return execSync("cat /proc/device-tree/model")
+    } catch {}
+    return ""
+  })()
   let ServoHead = null
-  if (arch.toString().startsWith("Darwin")) {
-    ServoHead = require("./servo-head-mac")
-  } else {
+  if (arch.toString().startsWith("Raspberry Pi")) {
     ServoHead = require("./servo-head-rpi")
+  } else {
+    ServoHead = require("./servo-head-mac")
   }
   return ServoHead.Start(params[0], params[1], params[2])
 }
@@ -108,17 +113,17 @@ export class ServoHeadBase {
     this.mode = "centering"
   }
 
-  control(data) {
+  control(data: { v: number; h: number }) {
     try {
-      const p = JSON.parse(data)
+      const p = data
       if (typeof p.v !== "undefined") {
         console.log(`vertical ${p.v}`)
-        this.servo0.initialCenter = parseFloat(p.v)
+        this.servo0.initialCenter = p.v
         this.servo0.center = this.servo0.initialCenter
       }
       if (typeof p.h !== "undefined") {
         console.log(`horizontal ${p.h}`)
-        this.servo1.initialCenter = parseFloat(p.h)
+        this.servo1.initialCenter = p.h
         this.servo1.center = this.servo1.initialCenter
       }
     } catch (err) {}
