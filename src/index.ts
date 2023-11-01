@@ -32,10 +32,18 @@ function main() {
         const params = require("querystring").parse(url.search)
         req.params = params
 
-        // curl -X POST -d '{"h":100,"v":200}' http://localhost:3091/center
-        if (url.pathname === "/center" || url.pathname === "/reset") {
+        // curl -X POST http://localhost:3091/reset
+        if (url.pathname === "/reset") {
           return requestHandler(req, (data) => {
-            servoHead.control(data, url.pathname === "/reset")
+            servoHead.reset()
+            res.end("OK\n")
+          })
+        }
+
+        // curl -X POST -d '{"h":100,"v":200}' http://localhost:3091/center
+        if (url.pathname === "/center") {
+          return requestHandler(req, (data) => {
+            servoHead.control(data)
             res.end("OK\n")
           })
         }

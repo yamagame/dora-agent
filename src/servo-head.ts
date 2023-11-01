@@ -100,7 +100,15 @@ export class ServoHeadBase {
     this.servoAction.on("centering", change)
   }
 
-  control(data, reset = false) {
+  reset() {
+    this.servo0.initialCenter = 0.073
+    this.servo0.center = this.servo0.initialCenter
+    this.servo1.initialCenter = 0.073
+    this.servo1.center = this.servo1.initialCenter
+    this.mode = "centering"
+  }
+
+  control(data) {
     try {
       const p = JSON.parse(data)
       if (typeof p.v !== "undefined") {
@@ -114,12 +122,6 @@ export class ServoHeadBase {
         this.servo1.center = this.servo1.initialCenter
       }
     } catch (err) {}
-    if (reset) {
-      this.servo0.initialCenter = 0.073
-      this.servo0.center = this.servo0.initialCenter
-      this.servo1.initialCenter = 0.073
-      this.servo1.center = this.servo1.initialCenter
-    }
     this.mode = "centering"
   }
 
