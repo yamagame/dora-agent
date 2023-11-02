@@ -1,5 +1,6 @@
 import { CreateServo, CreateServoAction } from "./action"
 import { ServoHeadBase } from "./servo-head"
+import { LedController } from "./led-controller"
 const math = require("./math")
 const raspi = require("raspi")
 const pigpio = require("pigpio")
@@ -17,7 +18,6 @@ export function Start(confpath, config, callback) {
 }
 
 class ServoHead extends ServoHeadBase {
-  buttonLevel = null
   button = null
   servo = null
 
@@ -29,7 +29,7 @@ class ServoHead extends ServoHeadBase {
     const servo0 = CreateServo(this.setting.servo0) //UP DOWN
     const servo1 = CreateServo(this.setting.servo1) //LEFT RIGHT
     const servoAction = CreateServoAction(servo0, servo1)
-    const led = require("./led-controller")()
+    const led = new LedController()
 
     const { ServoPWM } = require("./servo-pwm")
     const servo = ServoPWM()
@@ -56,12 +56,12 @@ class ServoHead extends ServoHeadBase {
     })
 
     setInterval(() => {
-      servoAction.idle(this.mode)
-      if (this.mode !== "talk") {
+      servoAction.idle(this._mode)
+      if (this._mode !== "talk") {
         led.resetTalk()
       }
       led.talk = math.abs(servo0.target - servo0.center)
-      led.idle(this.led_mode, this.led_bright)
+      led.idle(this._led_mode, this._led_bright)
     }, 20)
 
     this.servo0 = servo0
@@ -88,6 +88,9 @@ class ServoHead extends ServoHeadBase {
   }
 
   buttonRead() {
-    return this.button.digitalRead()
+    if (this.button) {
+      return this.button.digitalRead()
+    }
+    return -1
   }
 }

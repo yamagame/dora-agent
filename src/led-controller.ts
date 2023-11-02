@@ -1,9 +1,18 @@
 import * as EventEmitter from "events"
 
-class LedController extends EventEmitter {
+export enum LedMode {
+  on = "on",
+  off = "off",
+  blink = "blink",
+  talk = "talk",
+  power = "power",
+}
+
+export class LedController extends EventEmitter {
   now = 0
   max = 1
-  mode = "off"
+  mode: LedMode = LedMode.off
+  _mode = ""
   step = 0
   blinkSpeed = 0.025
   power_timer = 0
@@ -15,34 +24,34 @@ class LedController extends EventEmitter {
     super()
   }
 
-  idle(mode, value = 1) {
+  idle(mode: LedMode, value = 1) {
     this.idleCounter++
     if (this.idleCounter > 60) this.idleCounter = 0
     const now = this.now
     if (this.mode !== mode) {
       if (mode == "off") {
         this.mode = mode
-      } else if (mode == "on") {
+      } else if (mode == LedMode.on) {
         this.mode = mode
-      } else if (mode == "blink") {
+      } else if (mode == LedMode.blink) {
         this.mode = mode
-      } else if (mode == "talk") {
+      } else if (mode == LedMode.talk) {
         this.mode = mode
         this.step = 0
         this.idleCounter = 0
       }
-      if (mode == "power") {
+      if (mode == LedMode.power) {
         this.mode = mode
         this.power_timer = 50 * 10000
       }
     }
-    if (this.mode == "off") {
+    if (this.mode == LedMode.off) {
       this.now = 0
     }
-    if (this.mode == "on") {
+    if (this.mode == LedMode.on) {
       this.now = this.max
     }
-    if (this.mode == "power") {
+    if (this.mode == LedMode.power) {
       if (this.power_timer > 0) {
         if (this.power_timer % 50 < 25) {
           this.now = 0
@@ -52,14 +61,14 @@ class LedController extends EventEmitter {
         this.power_timer--
       }
     }
-    if (this.mode == "blink") {
+    if (this.mode == LedMode.blink) {
       this.now = ((Math.sin(this.theta) + 1) * this.max) / 2
       this.theta += this.blinkSpeed
       if (this.theta >= Math.PI * 2) {
         this.theta -= Math.PI * 2
       }
     }
-    if (this.mode == "talk") {
+    if (this.mode == LedMode.talk) {
       if (this.talk > 0 || this.step > 0) {
         if (this.step == 0) {
           this.idleCounter = 15
@@ -82,6 +91,10 @@ class LedController extends EventEmitter {
     if (now != this.now) {
       this.emit("updated")
     }
+    if (this._mode != this.mode) {
+      console.log(`led`, mode)
+      this._mode = this.mode
+    }
   }
 
   resetTalk() {
@@ -97,6 +110,6 @@ class LedController extends EventEmitter {
   }
 }
 
-module.exports = function () {
-  return new LedController()
-}
+// module.exports = function () {
+//   return new LedController()
+// }

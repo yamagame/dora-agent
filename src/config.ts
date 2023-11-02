@@ -1,7 +1,7 @@
 import * as fs from "fs"
 import * as path from "path"
 
-const basedir = process.env.ROBOT_BASE_DIR || path.join(__dirname, "..")
+const basedir = process.env.ROBOT_BASE_DIR || "."
 
 export const config = {
   basedir,

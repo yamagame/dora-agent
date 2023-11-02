@@ -1,18 +1,20 @@
 import * as path from "path"
 import * as ServoHead from "./servo-head"
+import { LedMode } from "./led-controller"
 const { config } = require("./config")
 const { Speech, SpeechMode } = require("./speech")
+import { ServoMode } from "./action"
 
 function main() {
   const { basedir } = config
   const confpath = path.join(basedir, "servo-head.json")
 
-  ServoHead.Start(confpath, config, (servoHead) => {
+  ServoHead.Start(confpath, config, (servoHead: ServoHead.ServoHeadBase) => {
     const speech = new Speech()
 
-    servoHead.mode = process.env.MODE || "idle"
-    servoHead.led_mode = process.env.LED_MODE || "off"
-    servoHead.led_bright = process.env.LED_VALUE || 1
+    servoHead.mode = (process.env.MODE as ServoMode) || ServoMode.idle
+    servoHead.led_mode = (process.env.LED_MODE as LedMode) || LedMode.off
+    servoHead.led_bright = parseInt(process.env.LED_VALUE) || 1
 
     const PORT = config.gpioPort
     const app = require("http").createServer(handler)
@@ -54,7 +56,7 @@ function main() {
         // curl -X POST http://localhost:3091/stop
         if (url.pathname === "/stop") {
           return requestHandler(req, (data) => {
-            servoHead.mode = "stop"
+            servoHead.mode = ServoMode.stop
             res.end("OK\n")
           })
         }
@@ -62,7 +64,7 @@ function main() {
         // curl -X POST http://localhost:3091/idle
         if (url.pathname === "/idle") {
           return requestHandler(req, (data) => {
-            servoHead.mode = "idle"
+            servoHead.mode = ServoMode.idle
             res.end("OK\n")
           })
         }
@@ -70,7 +72,7 @@ function main() {
         // curl -X POST http://localhost:3091/talk
         if (url.pathname === "/talk") {
           return requestHandler(req, (data) => {
-            servoHead.mode = "talk"
+            servoHead.mode = ServoMode.talk
             res.end("OK\n")
           })
         }
@@ -86,8 +88,8 @@ function main() {
         // curl -X POST http://localhost:3091/exit
         if (url.pathname === "/exit") {
           return requestHandler(req, (data) => {
-            servoHead.mode = "exit"
-            servoHead.led_mode = "off"
+            servoHead.mode = ServoMode.exit
+            servoHead.led_mode = LedMode.off
             setTimeout(() => {
               res.end("OK\n", () => {
                 console.log("exit")
@@ -115,11 +117,21 @@ function main() {
 
         // curl -X POST -d '{"text":"こんにちは"}' http://localhost:3091/utterance
         if (url.pathname === "/utterance") {
-          return requestHandler(req, async (data) => {
-            const { text } = JSON.parse(data)
-            speech.params.speechMode = SpeechMode.Aquestalk
-            await speech.play(text)
-            res.end("OK\n")
+          return requestHandler(req, (data) => {
+            try {
+              const { text } = JSON.parse(data)
+              servoHead.mode = ServoMode.centering
+              servoHead.centering(async () => {
+                speech.params.speechMode = SpeechMode.Aquestalk
+                const mode = servoHead.mode
+                servoHead.mode = ServoMode.talk
+                await speech.play(text)
+                servoHead.mode = ServoMode.idle
+                res.end("OK\n")
+              })
+            } catch {
+              res.end("ERR\n")
+            }
           })
         }
 
@@ -128,6 +140,19 @@ function main() {
           return requestHandler(req, async (data) => {
             speech.stop()
             res.end("OK\n")
+          })
+        }
+
+        // curl -X POST -d '{"mode":"on"}' http://localhost:3091/led
+        if (url.pathname === "/led") {
+          return requestHandler(req, async (data) => {
+            try {
+              const { mode } = JSON.parse(data)
+              servoHead.led_mode = mode
+              res.end("OK\n")
+            } catch {
+              res.end("ERR\n")
+            }
           })
         }
       }
@@ -158,14 +183,14 @@ function main() {
       })
 
       socket.on("message", function (payload, callback) {
-        if (servoHead.mode === "exit") {
+        if (servoHead.mode === ServoMode.exit) {
           if (callback) callback()
           return
         }
         try {
           const { action, direction } = payload
           if (action === "centering") {
-            servoHead.mode = "centering"
+            servoHead.mode = ServoMode.centering
           } else if (action === "talk" || action === "idle" || action === "stop") {
             servoHead.mode = action
             if (direction) {

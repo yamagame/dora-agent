@@ -10,7 +10,8 @@ class MockServoHead extends ServoHeadBase {
   constructor(confpath, config) {
     super(confpath, config)
   }
+
   buttonRead() {
-    return 0
+    return -1
   }
 }

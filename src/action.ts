@@ -15,8 +15,14 @@ function abs(a) {
   return a
 }
 
-let t0 = 0
-let t1 = 0
+export enum ServoMode {
+  center = "center",
+  centering = "centering",
+  idle = "idle",
+  talk = "talk",
+  stop = "stop",
+  exit = "exit",
+}
 
 class ServoEmitter extends EventEmitter {
   center = 0
@@ -64,11 +70,14 @@ class ActionEmitter extends EventEmitter {
   mode = "idle"
   state = "idle"
 
+  t0 = 0
+  t1 = 0
+
   constructor() {
     super()
   }
 
-  setState(mode, state) {
+  _setState(mode, state) {
     if (this.mode != mode || this.state != state) {
       this.mode = mode
       this.state = state
@@ -93,7 +102,7 @@ class ActionEmitter extends EventEmitter {
 
     if (u0 == false && u1 == false) {
       if (mode == "idle") {
-        this.setState(mode, "idle")
+        this._setState(mode, "idle")
         this.servo0.speed = 0.08
         this.servo1.speed = 0.08
         this.wait--
@@ -133,7 +142,7 @@ class ActionEmitter extends EventEmitter {
           this.servo0.target = this.servo0.center
           this.servo1.target = this.servo1.center
         } else {
-          this.setState(mode, "ready")
+          this._setState(mode, "ready")
         }
       } else if (mode == "talk") {
         if (abs(this.servo0.target - this.servo0.center) > 0.001) {
@@ -142,9 +151,9 @@ class ActionEmitter extends EventEmitter {
         } else if (abs(this.servo1.target - this.servo1.center) > 0.001) {
           this.servo0.target = this.servo0.center
           this.servo1.target = this.servo1.center
-          this.setState(mode, "centering")
+          this._setState(mode, "centering")
         } else {
-          this.setState(mode, "talking")
+          this._setState(mode, "talking")
           this.servo0.speed = 0.1
           switch (this.talkstep) {
             case 0:
@@ -165,13 +174,13 @@ class ActionEmitter extends EventEmitter {
         this.servo0.target = this.servo0.center
         this.servo1.target = this.servo1.center
       }
-      if (t1 != this.servo0.target) {
+      if (this.t1 != this.servo0.target) {
         console.log(`servo0 ${this.servo0.target}`)
-        t1 = this.servo0.target
+        this.t1 = this.servo0.target
       }
-      if (t0 != this.servo1.target) {
+      if (this.t0 != this.servo1.target) {
         console.log(`servo1 ${this.servo1.target}`)
-        t0 = this.servo1.target
+        this.t0 = this.servo1.target
       }
     }
   }

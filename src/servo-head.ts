@@ -1,7 +1,11 @@
 import * as fs from "fs"
-import { CreateServo, CreateServoAction } from "./action"
+import { CreateServo, CreateServoAction, ServoMode } from "./action"
+import { LedMode, LedController } from "./led-controller"
 const math = require("./math")
 const { execSync } = require("child_process")
+const { config } = require("./config")
+
+const gamepad = config.useGamePad ? require("./gamepad") : null
 
 export const Start = function (...params) {
   const arch = (() => {
@@ -30,9 +34,10 @@ function loadSetting(confpath) {
 }
 
 export class ServoHeadBase {
-  mode = "idle"
-  led_mode = "off"
-  led_bright = 1
+  _mode: ServoMode = ServoMode.idle
+  _led_mode: LedMode = LedMode.off
+  _led_bright = 1
+  gamepad = gamepad
   servo0 = null
   servo1 = null
   setting = {
@@ -40,23 +45,49 @@ export class ServoHeadBase {
     servo1: 0.073,
   }
   servoAction = null
+  buttonLevel = null
 
   constructor(confpath, config) {
     this.setting = loadSetting(confpath)
+  }
+
+  set mode(mode: ServoMode) {
+    this._mode = mode
+  }
+
+  get mode(): ServoMode {
+    return this._mode
+  }
+
+  set led_mode(mode) {
+    this._led_mode = mode
+  }
+
+  get led_mode() {
+    return this._led_mode
+  }
+
+  set led_bright(bright) {
+    this._led_bright = bright
+  }
+
+  get led_bright() {
+    return this._led_bright
   }
 
   startServo(config) {
     const servo0 = CreateServo(this.setting.servo0) //UP DOWN
     const servo1 = CreateServo(this.setting.servo1) //LEFT RIGHT
     const servoAction = CreateServoAction(servo0, servo1)
-    const led = require("./led-controller")()
+    const led = new LedController()
+
     setInterval(() => {
-      servoAction.idle(this.mode)
-      if (this.mode !== "talk") {
+      servoAction.idle(this._mode)
+      if (this._mode !== "talk") {
         led.resetTalk()
       }
       led.talk = math.abs(servo0.target - servo0.center)
-      led.idle(this.led_mode, this.led_bright)
+      led.idle(this._led_mode, this._led_bright)
     }, 20)
 
     this.servo0 = servo0
@@ -66,32 +97,32 @@ export class ServoHeadBase {
 
   changeLed(payload) {
     if (payload.action === "off") {
-      this.led_mode = "off"
+      this._led_mode = LedMode.off
     }
     if (payload.action === "on") {
-      this.led_mode = "on"
+      this._led_mode = LedMode.on
     }
     if (payload.action === "blink") {
-      this.led_mode = "blink"
+      this._led_mode = LedMode.blink
     }
     if (payload.action === "talk") {
-      this.led_mode = "talk"
+      this._led_mode = LedMode.talk
     }
     if (payload.action === "power") {
-      this.led_mode = "power"
+      this._led_mode = LedMode.power
     }
     if (payload.action === "active") {
-      this.led_mode = "off"
+      this._led_mode = LedMode.off
     }
     if (payload.action === "deactive") {
-      this.led_mode = "on"
+      this._led_mode = LedMode.on
     }
-    this.led_bright = typeof payload.value !== "undefined" ? payload.value : this.led_bright
+    this._led_bright = typeof payload.value !== "undefined" ? payload.value : this._led_bright
     //console.log(`led_mode ${led_mode} led_bright ${led_bright} `);
   }
 
   idle(direction) {
-    this.servoAction.idle(this.mode)
+    this.servoAction.idle(this._mode)
   }
 
   centering(callback) {
@@ -110,7 +141,7 @@ export class ServoHeadBase {
     this.servo0.center = this.servo0.initialCenter
     this.servo1.initialCenter = 0.073
     this.servo1.center = this.servo1.initialCenter
-    this.mode = "centering"
+    this._mode = ServoMode.centering
   }
 
   control(data: { v: number; h: number }) {
@@ -127,7 +158,7 @@ export class ServoHeadBase {
         this.servo1.center = this.servo1.initialCenter
       }
     } catch (err) {}
-    this.mode = "centering"
+    this._mode = ServoMode.centering
   }
 
   saveSetting(confpath) {
@@ -139,5 +170,9 @@ export class ServoHeadBase {
     try {
       fs.writeFileSync(confpath, JSON.stringify(data))
     } catch (err) {}
+  }
+
+  buttonRead() {
+    return 0
   }
 }
