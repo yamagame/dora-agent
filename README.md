@@ -1,4 +1,15 @@
-# dora-engine / GPIO プロセス
+# dora-agent
+
+ラズパイでコミュニケーションロボットを動かすためのプロセス
+
+- 発話処理
+  - OpenJTalk
+  - AquesTalkPi
+  - Siri(Sayコマンド) Macのみ
+- 首振り制御
+  - 上下
+  - 左右
+- LEDボタン制御
 
 pigpio は nodejs 14.X.X でビルドする必要がある。yarn install は nodejs 14.X.X で行うこと。
 
@@ -12,6 +23,8 @@ pigpio は nodejs 14.X.X でビルドする必要がある。yarn install は no
   - power
   - active
   - deactive
+
+- utterance 発話処理
 
 - message 首振りモード変更イベント
   - centering
@@ -38,3 +51,5 @@ pigpio は nodejs 14.X.X でビルドする必要がある。yarn install は no
   - /talk
   - /save
   - /exit
+  - /utterance
+  - /utterance/stop
