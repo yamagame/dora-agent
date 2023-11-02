@@ -45,7 +45,7 @@ export class Speech extends EventEmitter {
         return
       }
 
-      console.log(text)
+      console.log(`${speechMode}:`, text)
       switch (speechMode) {
         case SpeechMode.Dummy:
           resolve(0)

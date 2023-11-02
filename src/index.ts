@@ -31,6 +31,24 @@ function main() {
       })
     }
 
+    async function say(text: string) {
+      return new Promise((resolve, rejected) => {
+        try {
+          servoHead.mode = ServoMode.centering
+          servoHead.centering(async () => {
+            speech.params.speechMode = SpeechMode.Aquestalk
+            const mode = servoHead.mode
+            servoHead.mode = ServoMode.talk
+            await speech.play(text)
+            servoHead.mode = ServoMode.idle
+            resolve(0)
+          })
+        } catch {
+          rejected()
+        }
+      })
+    }
+
     function handler(req, res) {
       if (req.method === "POST") {
         const url = require("url").parse(req.url)
@@ -117,18 +135,11 @@ function main() {
 
         // curl -X POST -d '{"text":"こんにちは"}' http://localhost:3091/utterance
         if (url.pathname === "/utterance") {
-          return requestHandler(req, (data) => {
+          return requestHandler(req, async (data) => {
             try {
               const { text } = JSON.parse(data)
-              servoHead.mode = ServoMode.centering
-              servoHead.centering(async () => {
-                speech.params.speechMode = SpeechMode.Aquestalk
-                const mode = servoHead.mode
-                servoHead.mode = ServoMode.talk
-                await speech.play(text)
-                servoHead.mode = ServoMode.idle
-                res.end("OK\n")
-              })
+              await say(text)
+              res.end("OK\n")
             } catch {
               res.end("ERR\n")
             }
@@ -180,6 +191,15 @@ function main() {
 
       socket.on("disconnect", function () {
         console.log("disconnect")
+      })
+
+      socket.on("utterance", async function (payload, callback) {
+        console.log("utterance")
+        try {
+          const { text } = payload
+          await say(text)
+        } catch {}
+        if (callback) callback()
       })
 
       socket.on("message", function (payload, callback) {
