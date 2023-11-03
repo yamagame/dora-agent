@@ -33,3 +33,4 @@ robot-defaults.json
 *.tsbuildinfo
 
 dora-agent.json
+dora-agent.log
