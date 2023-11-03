@@ -1,0 +1,11 @@
+[Unit]
+Description=Robot Agent Service
+
+[Service]
+ExecStart=/bin/bash -c './dora-agent.sh'
+WorkingDirectory=/home/pi/dora-agent
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
