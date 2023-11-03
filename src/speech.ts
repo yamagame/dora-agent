@@ -2,7 +2,7 @@ import * as EventEmitter from "events"
 import { spawn, ChildProcess } from "child_process"
 import * as path from "path"
 import { config } from "./config"
-const { execSync } = require("child_process")
+import * as platform from "./platform"
 const utils = require("./pskiller")
 
 const { basedir } = config
@@ -15,25 +15,13 @@ export enum SpeechMode {
 }
 
 export function VoiceMode(voiceMode: string): SpeechMode {
-  const arch = (() => {
-    try {
-      return execSync("cat /proc/device-tree/model")
-    } catch {}
-    return ""
-  })()
-  const uname = (() => {
-    try {
-      return execSync("uname")
-    } catch {}
-    return ""
-  })()
   switch (voiceMode) {
     case "":
     case "default":
-      if (arch.toString().startsWith("Raspberry Pi")) {
+      if (platform.isRaspi()) {
         return SpeechMode.OpenJTalk
       }
-      if (uname.toString().startsWith("Darwin")) {
+      if (platform.isDarwin()) {
         return SpeechMode.Mac
       }
       break

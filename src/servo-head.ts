@@ -1,21 +1,15 @@
 import * as fs from "fs"
 import { CreateServo, CreateServoAction, ServoMode } from "./action"
 import { LedMode, LedController } from "./led-controller"
+import * as platform from "./platform"
 const math = require("./math")
-const { execSync } = require("child_process")
 const { config } = require("./config")
 
 const gamepad = config.useGamePad ? require("./gamepad") : null
 
 export const Start = function (...params) {
-  const arch = (() => {
-    try {
-      return execSync("cat /proc/device-tree/model")
-    } catch {}
-    return ""
-  })()
   let ServoHead = null
-  if (arch.toString().startsWith("Raspberry Pi")) {
+  if (platform.isRaspi()) {
     ServoHead = require("./servo-head-rpi")
   } else {
     ServoHead = require("./servo-head-mac")
