@@ -5,4 +5,4 @@
 
 cd `dirname $0`
 source ~/.bashrc
-npm servo:sudo
+npm run servo:sudo
