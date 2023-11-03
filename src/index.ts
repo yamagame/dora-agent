@@ -2,11 +2,11 @@ import * as path from "path"
 import * as ServoHead from "./servo-head"
 import { LedMode } from "./led-controller"
 const { config } = require("./config")
-const { Speech, SpeechMode } = require("./speech")
+const { Speech, VoiceMode } = require("./speech")
 import { ServoMode } from "./action"
 
 function main() {
-  const { basedir } = config
+  const { basedir, voiceMode } = config
   const confpath = path.join(basedir, "servo-head.json")
 
   ServoHead.Start(confpath, config, (servoHead: ServoHead.ServoHeadBase) => {
@@ -36,7 +36,7 @@ function main() {
         try {
           servoHead.mode = ServoMode.centering
           servoHead.centering(async () => {
-            speech.params.speechMode = SpeechMode.Aquestalk
+            speech.params.speechMode = VoiceMode(voiceMode)
             const mode = servoHead.mode
             servoHead.mode = ServoMode.talk
             await speech.play(text)

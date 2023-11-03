@@ -11,7 +11,29 @@
   - 左右
 - LEDボタン制御
 
-pigpio は nodejs 14.X.X でビルドする必要がある。yarn install は nodejs 14.X.X で行うこと。
+## 準備
+
+以下の作業は、ラズパイOSで行う。
+
+```sh
+# 以下、nodejsのインストール
+$ sudo apt update && sudo apt upgrade -y
+$ sudo apt -y install nodejs npm
+$ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+$ source ~/.bashrc
+$ nvm install lts/hydrogen
+$ nvm use lts/hydrogen
+$ npm install -g npm
+$ npm install -g yarn
+
+# OpenJTalk のインストール
+$ ./scripts/setup-rpi-openjtalk.sh
+
+# node_modules をインストール
+$ yarn install # または npm install
+$ yarn build
+$ yarn servo:sudo # または npm run servo:sudo
+```
 
 ## socket.io イベント
 

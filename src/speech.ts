@@ -2,6 +2,7 @@ import * as EventEmitter from "events"
 import { spawn, ChildProcess } from "child_process"
 import * as path from "path"
 import { config } from "./config"
+const { execSync } = require("child_process")
 const utils = require("./pskiller")
 
 const { basedir } = config
@@ -11,6 +12,43 @@ export enum SpeechMode {
   Mac = "mac",
   OpenJTalk = "open-jtalk",
   Aquestalk = "aquestalk",
+}
+
+export function VoiceMode(voiceMode: string): SpeechMode {
+  const arch = (() => {
+    try {
+      return execSync("cat /proc/device-tree/model")
+    } catch {}
+    return ""
+  })()
+  const uname = (() => {
+    try {
+      return execSync("uname")
+    } catch {}
+    return ""
+  })()
+  switch (voiceMode) {
+    case "":
+    case "default":
+      if (arch.toString().startsWith("Raspberry Pi")) {
+        return SpeechMode.OpenJTalk
+      }
+      if (uname.toString().startsWith("Darwin")) {
+        return SpeechMode.Mac
+      }
+      break
+    case "mac":
+    case "siri":
+    case "say":
+      return SpeechMode.Mac
+    case "aquest":
+    case "aquestalk":
+      return SpeechMode.Aquestalk
+    case "openjtalk":
+    case "open-jtalk":
+      return SpeechMode.OpenJTalk
+  }
+  return SpeechMode.Dummy
 }
 
 export class SppechInternalParam {

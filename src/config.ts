@@ -10,4 +10,5 @@ export const config = {
   useGamePad: (process.env.ROBOT_USB_GAMEPAD || "false") === "true",
   credentialAccessControl: (process.env.ROBOT_CREDENTIAL_ACCESS_CONTROL || "false") === "true",
   localhostIPs: ["::1", "::ffff:127.0.0.1"],
+  voiceMode: process.env.ROBOT_VOICE_MODE || "default", // 'say' or 'aquest' or 'openjtalk'
 }
