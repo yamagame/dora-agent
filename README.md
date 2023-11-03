@@ -102,6 +102,33 @@ $ aplay ./assets/audio/Pop.wav
 $ alsamixer
 ```
 
+## 自動起動設定
+
+下記スクリプトを実行し再起動する。
+
+```sh
+$ ./scripts/setup-autolaunch.sh
+```
+
+AquesTalkPi に変更したいときは、dora-agent.sh を編集し再起動する。
+
+```sh
+#!/bin/bash
+#
+# ロボットエージェントプロセスを立ち上げる
+#
+
+cd `dirname $0`
+source ~/.bashrc
+npm run servo:aquest  # <= ここを変更する
+```
+
+サービスの再起動
+
+```sh
+$ sudo service dora-agent restart
+```
+
 ## socket.io イベント
 
 - led-command LED点灯モード変更イベント
