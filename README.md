@@ -35,6 +35,73 @@ $ yarn build
 $ yarn servo:sudo # または npm run servo:sudo
 ```
 
+## MAX98357A D級アンプ を使用して音声出力する
+
+### /boot/config.txt を編集する
+
+以下の項目をコメントアウトして無効化します。
+
+```
+dtparam=audio=on
+```
+
+以下の３項目を記入して有効化します。
+
+```
+dtparam=i2s=on
+dtoverlay=i2s-mmap
+dtoverlay=googlevoicehat-soundcard
+```
+
+### /etc/asound.conf を作成
+
+```
+options snd_rpi_googlemihat_soundcard index=0
+
+pcm.softvol {
+    type softvol
+    slave.pcm dmix
+    control {
+        name Master
+        card 0
+    }
+}
+
+pcm.micboost {
+    type route
+    slave.pcm dsnoop
+    ttable {
+        0.0 10
+        1.1 10
+    }
+}
+
+pcm.!default {
+    type asym
+    playback.pcm "plug:softvol"
+    capture.pcm "plug:micboost"
+}
+
+ctl.!default {
+    type hw
+    card 0
+}
+```
+
+### 再生の確認
+
+以下のコマンドを実行してスピーカーから音がでるか確認する。
+
+```sh
+$ aplay ./assets/audio/Pop.wav
+```
+
+音が大きいときは以下のコマンドでボリュームの調整ができる。
+
+```sh
+$ alsamixer
+```
+
 ## socket.io イベント
 
 - led-command LED点灯モード変更イベント
