@@ -2,7 +2,7 @@ const { execSync } = require("child_process")
 
 export function arch() {
   try {
-    return execSync("cat /proc/device-tree/model")
+    return execSync("cat /proc/device-tree/model 2>&1")
   } catch {}
   return ""
 }

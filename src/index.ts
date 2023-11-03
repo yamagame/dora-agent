@@ -4,6 +4,7 @@ import { LedMode } from "./led-controller"
 const { config } = require("./config")
 const { Speech, VoiceMode } = require("./speech")
 import { ServoMode } from "./action"
+import { execPowerOff } from "./poweroff"
 
 function main() {
   const { basedir, voiceMode } = config
@@ -12,7 +13,7 @@ function main() {
   ServoHead.Start(confpath, config, (servoHead: ServoHead.ServoHeadBase) => {
     const speech = new Speech()
 
-    servoHead.mode = (process.env.MODE as ServoMode) || ServoMode.idle
+    servoHead.servo_mode = (process.env.MODE as ServoMode) || ServoMode.idle
     servoHead.led_mode = (process.env.LED_MODE as LedMode) || LedMode.off
     servoHead.led_bright = parseInt(process.env.LED_VALUE) || 1
 
@@ -34,13 +35,16 @@ function main() {
     async function say(text: string) {
       return new Promise((resolve, rejected) => {
         try {
-          servoHead.mode = ServoMode.centering
+          servoHead.changeLed(LedMode.off)
+          servoHead.servo_mode = ServoMode.centering
           servoHead.centering(async () => {
             speech.params.speechMode = VoiceMode(voiceMode)
-            const mode = servoHead.mode
-            servoHead.mode = ServoMode.talk
+            const mode = servoHead.servo_mode
+            servoHead.servo_mode = ServoMode.talk
+            servoHead.changeLed(LedMode.talk)
             await speech.play(text)
-            servoHead.mode = ServoMode.idle
+            servoHead.servo_mode = ServoMode.idle
+            servoHead.changeLed(LedMode.blink)
             resolve(0)
           })
         } catch {
@@ -59,6 +63,7 @@ function main() {
         if (url.pathname === "/reset") {
           return requestHandler(req, (data) => {
             servoHead.reset()
+            servoHead.changeLed(LedMode.off)
             res.end("OK\n")
           })
         }
@@ -67,6 +72,7 @@ function main() {
         if (url.pathname === "/center") {
           return requestHandler(req, (data) => {
             servoHead.control(JSON.parse(data))
+            servoHead.changeLed(LedMode.on)
             res.end("OK\n")
           })
         }
@@ -74,7 +80,8 @@ function main() {
         // curl -X POST http://localhost:3091/stop
         if (url.pathname === "/stop") {
           return requestHandler(req, (data) => {
-            servoHead.mode = ServoMode.stop
+            servoHead.servo_mode = ServoMode.stop
+            servoHead.changeLed(LedMode.off)
             res.end("OK\n")
           })
         }
@@ -82,7 +89,8 @@ function main() {
         // curl -X POST http://localhost:3091/idle
         if (url.pathname === "/idle") {
           return requestHandler(req, (data) => {
-            servoHead.mode = ServoMode.idle
+            servoHead.servo_mode = ServoMode.idle
+            servoHead.changeLed(LedMode.blink)
             res.end("OK\n")
           })
         }
@@ -90,7 +98,17 @@ function main() {
         // curl -X POST http://localhost:3091/talk
         if (url.pathname === "/talk") {
           return requestHandler(req, (data) => {
-            servoHead.mode = ServoMode.talk
+            servoHead.servo_mode = ServoMode.talk
+            servoHead.changeLed(LedMode.talk)
+            res.end("OK\n")
+          })
+        }
+
+        // curl -X POST http://localhost:3091/listen
+        if (url.pathname === "/listen") {
+          return requestHandler(req, (data) => {
+            servoHead.servo_mode = ServoMode.idle
+            servoHead.changeLed(LedMode.on)
             res.end("OK\n")
           })
         }
@@ -103,10 +121,20 @@ function main() {
           })
         }
 
+        // curl -X POST http://localhost:3091/poweroff
+        if (url.pathname === "/poweroff") {
+          return requestHandler(req, (data) => {
+            servoHead.led_mode = LedMode.on
+            servoHead.servo_mode = ServoMode.stop
+            setTimeout(execPowerOff, 5000)
+            res.end("OK\n")
+          })
+        }
+
         // curl -X POST http://localhost:3091/exit
         if (url.pathname === "/exit") {
           return requestHandler(req, (data) => {
-            servoHead.mode = ServoMode.exit
+            servoHead.servo_mode = ServoMode.exit
             servoHead.led_mode = LedMode.off
             setTimeout(() => {
               res.end("OK\n", () => {
@@ -159,7 +187,12 @@ function main() {
           return requestHandler(req, async (data) => {
             try {
               const { mode } = JSON.parse(data)
-              servoHead.led_mode = mode
+              if (mode == "auto") {
+                servoHead.led_auto = true
+              } else {
+                servoHead.led_mode = mode
+                servoHead.led_auto = false
+              }
               res.end("OK\n")
             } catch {
               res.end("ERR\n")
@@ -184,11 +217,6 @@ function main() {
       }
       console.log("start action")
 
-      socket.on("led-command", (payload, callback) => {
-        servoHead.changeLed(payload)
-        if (callback) callback()
-      })
-
       socket.on("disconnect", function () {
         console.log("disconnect")
       })
@@ -203,19 +231,29 @@ function main() {
       })
 
       socket.on("message", function (payload, callback) {
-        if (servoHead.mode === ServoMode.exit) {
+        if (servoHead.servo_mode === ServoMode.exit) {
           if (callback) callback()
           return
         }
         try {
-          const { action, direction } = payload
-          if (action === "centering") {
-            servoHead.mode = ServoMode.centering
-          } else if (action === "talk" || action === "idle" || action === "stop") {
-            servoHead.mode = action
-            if (direction) {
-              servoHead.idle(direction)
-            }
+          const { action } = payload
+          if (action === "listen") {
+            servoHead.servo_mode = ServoMode.idle
+            servoHead.changeLed(LedMode.on)
+          } else if (action === "centering") {
+            servoHead.servo_mode = ServoMode.centering
+            servoHead.changeLed(LedMode.off)
+          } else if (action === "talk") {
+            servoHead.servo_mode = action
+            servoHead.changeLed(LedMode.talk)
+          } else if (action === "idle") {
+            servoHead.servo_mode = action
+            servoHead.changeLed(LedMode.blink)
+          } else if (action === "stop") {
+            servoHead.servo_mode = action
+            servoHead.changeLed(LedMode.off)
+          } else if (action === "led-auto") {
+            servoHead.led_auto = true
           } else if (
             action === "led-on" ||
             action === "led-off" ||
@@ -223,6 +261,7 @@ function main() {
             action === "led-talk"
           ) {
             servoHead.led_mode = action.toString().split("-")[1]
+            servoHead.led_auto = false
             servoHead.led_bright = 1
           }
           if (callback) {

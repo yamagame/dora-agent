@@ -31,6 +31,7 @@ export class ServoHeadBase {
   _mode: ServoMode = ServoMode.idle
   _led_mode: LedMode = LedMode.off
   _led_bright = 1
+  _led_auto = true
   gamepad = gamepad
   servo0 = null
   servo1 = null
@@ -45,11 +46,11 @@ export class ServoHeadBase {
     this.setting = loadSetting(confpath)
   }
 
-  set mode(mode: ServoMode) {
+  set servo_mode(mode: ServoMode) {
     this._mode = mode
   }
 
-  get mode(): ServoMode {
+  get servo_mode(): ServoMode {
     return this._mode
   }
 
@@ -59,6 +60,14 @@ export class ServoHeadBase {
 
   get led_mode() {
     return this._led_mode
+  }
+
+  set led_auto(flag) {
+    this._led_auto = flag
+  }
+
+  get led_auto() {
+    return this._led_auto
   }
 
   set led_bright(bright) {
@@ -89,33 +98,15 @@ export class ServoHeadBase {
     this.servoAction = servoAction
   }
 
-  changeLed(payload) {
-    if (payload.action === "off") {
-      this._led_mode = LedMode.off
+  changeLed(action: LedMode) {
+    if (this.led_auto) {
+      this._led_mode = action
     }
-    if (payload.action === "on") {
-      this._led_mode = LedMode.on
-    }
-    if (payload.action === "blink") {
-      this._led_mode = LedMode.blink
-    }
-    if (payload.action === "talk") {
-      this._led_mode = LedMode.talk
-    }
-    if (payload.action === "power") {
-      this._led_mode = LedMode.power
-    }
-    if (payload.action === "active") {
-      this._led_mode = LedMode.off
-    }
-    if (payload.action === "deactive") {
-      this._led_mode = LedMode.on
-    }
-    this._led_bright = typeof payload.value !== "undefined" ? payload.value : this._led_bright
+    // this._led_bright = typeof payload.value !== "undefined" ? payload.value : this._led_bright
     //console.log(`led_mode ${led_mode} led_bright ${led_bright} `);
   }
 
-  idle(direction) {
+  idle() {
     this.servoAction.idle(this._mode)
   }
 
