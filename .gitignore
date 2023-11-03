@@ -32,4 +32,4 @@ robot-defaults.json
 .env
 *.tsbuildinfo
 
-servo-head.json
+dora-agent.json

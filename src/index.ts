@@ -7,7 +7,7 @@ import { ServoMode } from "./action"
 
 function main() {
   const { basedir, voiceMode } = config
-  const confpath = path.join(basedir, "servo-head.json")
+  const confpath = path.join(basedir, "dora-agent.json")
 
   ServoHead.Start(confpath, config, (servoHead: ServoHead.ServoHeadBase) => {
     const speech = new Speech()
@@ -98,7 +98,7 @@ function main() {
         // curl -X POST http://localhost:3091/save
         if (url.pathname === "/save") {
           return requestHandler(req, (data) => {
-            servoHead.saveSetting(path.join(basedir, "servo-head.json"))
+            servoHead.saveSetting(path.join(basedir, "dora-agent.json"))
             res.end("OK\n")
           })
         }
