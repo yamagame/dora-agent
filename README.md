@@ -13,7 +13,11 @@
 
 ## 準備
 
-以下の作業は、ラズパイOSで行う。
+[Raspberry Pi : Operating system images](https://www.raspberrypi.com/software/operating-systems/) から、Raspberry Pi OS Lite (bookworm/64bit) のイメージをダウンロードして SD カードを用意する。
+
+![Raspberry Pi OS](./img/raspi-os-image.png)
+
+以下の作業は、ラズパイOSで行う。ユーザー名は「pi」とする。
 
 ```sh
 # 以下、nodejsのインストール
