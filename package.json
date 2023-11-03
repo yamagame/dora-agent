@@ -29,7 +29,7 @@
     "build:all": "rm -rf ./build && tsc --project tsconfig.build.json && tsc-alias --verbose -p tsconfig.build.json",
     "servo": "node build/src/index.js",
     "servo:sudo": "sudo node build/src/index.js",
-    "servo:aquest": "sudo bash -c \"ROBOT_VOICE_MODE=aquest sudo node build/src/index.js\"",
+    "servo:aquest": "sudo bash -c \"ROBOT_VOICE_MODE=aquest node build/src/index.js\"",
     "clean": "rm -rf ./build",
     "ts-node": "ts-node -r tsconfig-paths/register $1",
     "test": "jest"
