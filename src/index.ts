@@ -5,10 +5,29 @@ const { config } = require("./config")
 const { Speech, VoiceMode } = require("./speech")
 import { ServoMode } from "./action"
 import { execPowerOff } from "./poweroff"
+import { GamePad, pad2 } from "./gamepad"
 
 function main() {
   const { basedir, voiceMode } = config
   const confpath = path.join(basedir, "dora-agent.json")
+
+  console.log(`config.gamePadIDs`, config.gamePadIDs)
+
+  let state = 0
+  if (config.gamePadIDs.length > 0) {
+    const gamepad = new GamePad(config.gamePadIDs)
+    gamepad.startMonitoring()
+    gamepad.on("event", (data) => {
+      const bytes = data
+      if (bytes && bytes.length > 5) {
+        if (bytes[5] != state) {
+          state = bytes[5]
+          console.log(pad2(state))
+        }
+      }
+    })
+    process.on("exit", gamepad.close)
+  }
 
   ServoHead.Start(confpath, config, (servoHead: ServoHead.ServoHeadBase) => {
     const speech = new Speech()
@@ -279,34 +298,34 @@ function main() {
         }
       })
 
-      socket.on("gamepad", (payload, callback) => {
-        if (config.useGamePad) {
-          const { action, vendorId, productId } = payload
-          if (action === "add") {
-            servoHead.gamepad.add(vendorId, productId)
-          }
-          if (action === "remove") {
-            servoHead.gamepad.remove(vendorId, productId)
-          }
-        }
-        if (callback) callback()
-      })
+      // socket.on("gamepad", (payload, callback) => {
+      //   if (config.useGamePad) {
+      //     const { action, vendorId, productId } = payload
+      //     if (action === "add") {
+      //       servoHead.gamepad.add(vendorId, productId)
+      //     }
+      //     if (action === "remove") {
+      //       servoHead.gamepad.remove(vendorId, productId)
+      //     }
+      //   }
+      //   if (callback) callback()
+      // })
     })
 
-    setInterval(() => {
-      let level = servoHead.buttonRead()
-      if (!config.voiceHat) level = 1 - level
-      if (servoHead.buttonLevel != level) {
-        servoHead.buttonLevel = level
-        io.emit("button", { level: level, state: level == 0 })
-      }
-    }, 100)
+    // setInterval(() => {
+    //   let level = servoHead.buttonRead()
+    //   if (!config.voiceHat) level = 1 - level
+    //   if (servoHead.buttonLevel != level) {
+    //     servoHead.buttonLevel = level
+    //     io.emit("button", { level: level, state: level == 0 })
+    //   }
+    // }, 100)
 
-    if (config.useGamePad) {
-      servoHead.gamepad.on("event", (event) => {
-        io.emit("gamepad", event)
-      })
-    }
+    // if (config.useGamePad) {
+    //   servoHead.gamepad.on("event", (event) => {
+    //     io.emit("gamepad", event)
+    //   })
+    // }
   })
 }
 

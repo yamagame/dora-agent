@@ -4,9 +4,11 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "node-hid": "^2.1.2",
     "ps-tree": "^1.2.0",
     "socket.io": "^4.4.1",
-    "socket.io-client": "^4.4.1"
+    "socket.io-client": "^4.4.1",
+    "usb-detection": "^4.14.2"
   },
   "optionalDependencies": {
     "raspi": "^6.0.1",
@@ -25,6 +27,7 @@
   },
   "scripts": {
     "start": "ts-node src/index.ts",
+    "start:gamepad": "ROBOT_USB_GAMEPADS='054C:09CC,0079:0011' ts-node src/index.ts",
     "build": "tsc --project tsconfig.build.json && tsc-alias --verbose -p tsconfig.build.json",
     "build:all": "rm -rf ./build && tsc --project tsconfig.build.json && tsc-alias --verbose -p tsconfig.build.json",
     "servo": "node build/src/index.js",
@@ -32,6 +35,7 @@
     "servo:aquest": "sudo bash -c \"ROBOT_VOICE_MODE=aquest node build/src/index.js\"",
     "clean": "rm -rf ./build",
     "ts-node": "ts-node -r tsconfig-paths/register $1",
+    "gamepad": "ts-node src/gamepad.ts '054C:09CC,0079:0011'",
     "test": "jest"
   },
   "jest": {
