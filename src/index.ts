@@ -27,6 +27,14 @@ function main() {
       }
     })
     process.on("exit", gamepad.close)
+
+    // const childProcess = spawn('./scripts/joystick.sh')
+    // childProcess.stdout.on('data', (chunk) => {
+    //   console.log(chunk.toString())
+    // })
+    // childProcess.stderr.on('data', (chunk) => {
+    //   console.log(chunk.toString())
+    // })
   }
 
   ServoHead.Start(confpath, config, (servoHead: ServoHead.ServoHeadBase) => {
