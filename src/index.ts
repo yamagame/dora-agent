@@ -68,7 +68,8 @@ function main() {
           })
         }
 
-        // curl -X POST -d '{"h":100,"v":200}' http://localhost:3091/center
+        // curl -X POST -d '{"h":0.073,"v":0.073}' http://localhost:3091/center
+        // 値の範囲：0.030 - 0.073 - 0.12
         if (url.pathname === "/center") {
           return requestHandler(req, (data) => {
             servoHead.control(JSON.parse(data))
