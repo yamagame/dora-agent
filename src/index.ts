@@ -14,7 +14,7 @@ function main() {
     const speech = new Speech()
 
     servoHead.servo_mode = (process.env.MODE as ServoMode) || ServoMode.idle
-    servoHead.led_mode = (process.env.LED_MODE as LedMode) || LedMode.off
+    servoHead.led_mode = (process.env.LED_MODE as LedMode) || LedMode.blink
     servoHead.led_bright = parseInt(process.env.LED_VALUE) || 1
 
     const PORT = config.gpioPort
@@ -278,19 +278,6 @@ function main() {
           if (callback) callback()
         }
       })
-
-      socket.on("gamepad", (payload, callback) => {
-        if (config.useGamePad) {
-          const { action, vendorId, productId } = payload
-          if (action === "add") {
-            servoHead.gamepad.add(vendorId, productId)
-          }
-          if (action === "remove") {
-            servoHead.gamepad.remove(vendorId, productId)
-          }
-        }
-        if (callback) callback()
-      })
     })
 
     setInterval(() => {
@@ -301,12 +288,6 @@ function main() {
         io.emit("button", { level: level, state: level == 0 })
       }
     }, 100)
-
-    if (config.useGamePad) {
-      servoHead.gamepad.on("event", (event) => {
-        io.emit("gamepad", event)
-      })
-    }
   })
 }
 
