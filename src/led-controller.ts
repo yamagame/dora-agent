@@ -92,7 +92,7 @@ export class LedController extends EventEmitter {
       this.emit("updated")
     }
     if (this._mode != this.mode) {
-      console.log(`led`, mode)
+      console.log(`led`, this.mode)
       this._mode = this.mode
     }
   }
