@@ -5,8 +5,6 @@ import * as platform from "./platform"
 const math = require("./math")
 const { config } = require("./config")
 
-const gamepad = config.useGamePad ? require("./gamepad") : null
-
 export const Start = function (...params) {
   let ServoHead = null
   if (platform.isRaspi()) {
@@ -32,7 +30,6 @@ export class ServoHeadBase {
   _led_mode: LedMode = LedMode.off
   _led_bright = 1
   _led_auto = true
-  gamepad = gamepad
   servo0 = null
   servo1 = null
   setting = {

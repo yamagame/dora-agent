@@ -156,10 +156,6 @@ $ sudo service dora-agent restart
   - led-blink
   - led-talk
 
-- gamepad ゲームパッド接続イベント（内部で使用）
-  - add
-  - remove
-
 - button ボタン押下イベント
 
 ## POST リクエスト
