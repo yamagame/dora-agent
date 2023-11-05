@@ -6,6 +6,7 @@ const { Speech, VoiceMode } = require("./speech")
 import { ServoMode } from "./action"
 import { execPowerOff } from "./poweroff"
 import { GamePad, pad2 } from "./gamepad"
+// const { spawn } = require('child_process')
 
 function main() {
   const { basedir, voiceMode } = config
