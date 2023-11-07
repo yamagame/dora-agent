@@ -3,7 +3,6 @@ import { CreateServo, CreateServoAction, ServoMode } from "./action"
 import { LedMode, LedController } from "./led-controller"
 import * as platform from "./platform"
 const math = require("./math")
-const { config } = require("./config")
 
 export const Start = function (...params) {
   let ServoHead = null
