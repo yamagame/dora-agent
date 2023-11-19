@@ -140,7 +140,7 @@ $ aplay ./assets/audio/Pop.wav
 ## AquesTalkPi の再生
 
 ```sh
-# 64bitOSの場合、以下のコマンドをコンテナ内で実行して32bitライブラリをインストールする
+# 32bit版AquesTalkPi を 64bitOS で使用する場合、以下のコマンドをコンテナ内で実行して32bitライブラリをインストールする
 $ dpkg --add-architecture armhf
 $ apt update
 $ apt install libc6:armhf libstdc++6:armhf
