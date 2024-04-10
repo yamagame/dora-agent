@@ -1,4 +1,4 @@
-import * as EventEmitter from "events"
+import { EventEmitter } from "events"
 import { spawn, ChildProcess } from "child_process"
 import * as path from "path"
 import { config } from "./config"
