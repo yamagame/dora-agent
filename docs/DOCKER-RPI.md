@@ -56,7 +56,7 @@ $ exit
 $ docker image import ./work/2023-10-10-raspios-bookworm-arm64-lite.tar raspios_lite_arm64:2023-10-10
 
 # コンテナを起動
-$ docker run -it --rm -w /app --entrypoint -p 7005:7005 /bin/bash raspios_lite_arm64:2023-10-10
+$ docker run -it --rm -w /app -p 7005:7005 /bin/bash raspios_lite_arm64:2023-10-10
 
 # OSのバージョンを確認
 $ lsb_release -a
