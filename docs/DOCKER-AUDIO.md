@@ -64,10 +64,11 @@ $ pacmd set-default-sink Channel_1__Channel_2
 
 ## コンテナ内から再生確認
 
+raspios_lite_arm64イメージの作成はこちら -> [RaspiOS を Mac 上の Docker で動作させる手順](https://github.com/yamagame/dora-agent/blob/main/docs/DOCKER-RPI.md)
+
 ```sh
-# DialogSystem コンテナの起動&ログイン
-$ docker-compose up -d dialog-system
-$ docker-compose exec -it dialog-system bash
+# ラズパイコンテナの起動&ログイン
+$ docker run -it --rm raspios_lite_arm64:2023-10-10 bash
 ```
 
 ```sh
